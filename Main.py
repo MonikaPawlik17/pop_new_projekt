@@ -237,3 +237,42 @@ def zapisz_edycje(i):
     pokaz_uczelnie()
     entry_nazwa.delete(0, END)
     button_dodaj.config(text="Dodaj uczelnię", command=dodaj_uczelnie)
+
+
+# === GUI ===
+root = Tk()
+root.title("Uczelnie – Mapa i Zarządzanie")
+root.geometry("1200x700")
+
+ramka_lista = Frame(root)
+ramka_formularz = Frame(root)
+ramka_mapa = Frame(root)
+
+ramka_lista.pack(side=LEFT, padx=10, pady=10)
+ramka_formularz.pack(side=TOP, padx=10, pady=10)
+ramka_mapa.pack(side=BOTTOM, padx=10, pady=10, fill=BOTH, expand=True)
+
+Label(ramka_lista, text="Lista uczelni").pack()
+listbox_uczelnie = Listbox(ramka_lista, width=40, height=20)
+listbox_uczelnie.pack()
+Button(ramka_lista, text="Pokaż uczelnię", command=pokaz_na_mapie_uczelni).pack(pady=2)
+Button(ramka_lista, text="Pokaż wszystkie uczelnie", command=pokaz_wszystkie_uczelnie_na_mapie).pack(pady=2)
+Button(ramka_lista, text="Usuń uczelnię", command=usun_uczelnie).pack(pady=2)
+Button(ramka_lista, text="Edytuj uczelnię", command=edytuj_uczelnie).pack(pady=2)
+Button(ramka_lista, text="Pracownicy", command=lambda: otworz_panel_osob("Pracownicy", Pracownik, uczelnia_pracownicy)).pack(pady=5)
+Button(ramka_lista, text="Klienci", command=lambda: otworz_panel_osob("Klienci", Klient, uczelnia_klienci)).pack(pady=5)
+Button(ramka_lista, text="Mapa pracowników wybranej", command=lambda: pokaz_osoby_uczelni("pracownik")).pack(pady=2)
+Button(ramka_lista, text="Mapa klientów wybranej", command=lambda: pokaz_osoby_uczelni("klient")).pack(pady=2)
+
+Label(ramka_formularz, text="Dodaj uczelnię (nazwa/adres):").pack()
+entry_nazwa = Entry(ramka_formularz, width=40)
+entry_nazwa.pack()
+button_dodaj = Button(ramka_formularz, text="Dodaj uczelnię", command=dodaj_uczelnie)
+button_dodaj.pack(pady=5)
+
+map_widget = tkintermapview.TkinterMapView(ramka_mapa, width=800, height=500, corner_radius=0)
+map_widget.pack(fill=BOTH, expand=True)
+map_widget.set_position(52.23, 21.0)
+map_widget.set_zoom(6)
+
+root.mainloop()
