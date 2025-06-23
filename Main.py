@@ -196,3 +196,44 @@ def pokaz_osoby_uczelni(typ):
         map_widget.set_position(lat, lon)
         map_widget.set_zoom(7)
 
+def usun_uczelnie():
+    idx = listbox_uczelnie.curselection()
+    if not idx:
+        return
+    i = idx[0]
+    uczelnia = uczelnie[i]
+    for p in uczelnia_pracownicy.get(uczelnia.nazwa, []):
+        if p.marker:
+            p.marker.delete()
+    for k in uczelnia_klienci.get(uczelnia.nazwa, []):
+        if k.marker:
+            k.marker.delete()
+    if uczelnia.marker:
+        uczelnia.marker.delete()
+    uczelnie.pop(i)
+    uczelnia_pracownicy.pop(uczelnia.nazwa, None)
+    uczelnia_klienci.pop(uczelnia.nazwa, None)
+    pokaz_uczelnie()
+
+def edytuj_uczelnie():
+    idx = listbox_uczelnie.curselection()
+    if not idx:
+        return
+    i = idx[0]
+    entry_nazwa.delete(0, END)
+    entry_nazwa.insert(0, uczelnie[i].nazwa)
+    button_dodaj.config(text="Zapisz", command=lambda: zapisz_edycje(i))
+
+def zapisz_edycje(i):
+    nowa_nazwa = entry_nazwa.get().strip()
+    if not nowa_nazwa:
+        return
+    stara_nazwa = uczelnie[i].nazwa
+    if uczelnie[i].marker:
+        uczelnie[i].marker.delete()
+    uczelnie[i] = Uczelnia(nowa_nazwa)
+    uczelnia_pracownicy[nowa_nazwa] = uczelnia_pracownicy.pop(stara_nazwa, [])
+    uczelnia_klienci[nowa_nazwa] = uczelnia_klienci.pop(stara_nazwa, [])
+    pokaz_uczelnie()
+    entry_nazwa.delete(0, END)
+    button_dodaj.config(text="Dodaj uczelnię", command=dodaj_uczelnie)
