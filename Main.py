@@ -23,3 +23,121 @@ class Uczelnia:
             return float(data[0]["lat"]), float(data[0]["lon"])
         except:
             return 52.23, 21.0
+
+class Osoba:
+    def __init__(self, imie_nazwisko, miasto, nazwa_uczelni):
+        self.imie_nazwisko = imie_nazwisko
+        self.miasto = miasto
+        self.nazwa_uczelni = nazwa_uczelni
+        self.latitude, self.longitude = self.get_coordinates()
+        self.marker = None
+
+    def get_coordinates(self):
+        try:
+            url = f"https://nominatim.openstreetmap.org/search.php?q={quote(self.miasto)}&format=jsonv2"
+            headers = {"User-Agent": "Mozilla/5.0"}
+            resp = requests.get(url, headers=headers)
+            data = resp.json()
+            return float(data[0]["lat"]), float(data[0]["lon"])
+        except:
+            return 52.23, 21.0
+
+class Pracownik(Osoba): pass
+class Klient(Osoba): pass
+
+def otworz_panel_osob(nazwa_typu, typ_klasy, baza_danych):
+    idx = listbox_uczelnie.curselection()
+    if not idx:
+        return
+    uczelnia = uczelnie[idx[0]]
+    nazwa_uczelni = uczelnia.nazwa
+    if nazwa_uczelni not in baza_danych:
+        baza_danych[nazwa_uczelni] = []
+
+    okno = Toplevel(root)
+    okno.title(f"{nazwa_typu} – {nazwa_uczelni}")
+    okno.geometry("400x550")
+
+    listbox = Listbox(okno, width=50, height=15)
+    listbox.pack()
+
+    def odswiez():
+        listbox.delete(0, END)
+        for i, o in enumerate(baza_danych[nazwa_uczelni]):
+            listbox.insert(i, f"{i+1}. {o.imie_nazwisko} – {o.miasto}")
+
+    def dodaj():
+        imie = entry_imie.get().strip()
+        miasto = entry_miasto.get().strip()
+        if not imie or not miasto:
+            return
+        osoba = typ_klasy(imie, miasto, nazwa_uczelni)
+        baza_danych[nazwa_uczelni].append(osoba)
+        odswiez()
+        entry_imie.delete(0, END)
+        entry_miasto.delete(0, END)
+
+    def usun():
+        sel = listbox.curselection()
+        if not sel:
+            return
+        i = sel[0]
+        if baza_danych[nazwa_uczelni][i].marker:
+            baza_danych[nazwa_uczelni][i].marker.delete()
+        baza_danych[nazwa_uczelni].pop(i)
+        odswiez()
+
+    def edytuj():
+        sel = listbox.curselection()
+        if not sel:
+            return
+        i = sel[0]
+        osoba = baza_danych[nazwa_uczelni][i]
+        entry_imie.delete(0, END)
+        entry_imie.insert(0, osoba.imie_nazwisko)
+        entry_miasto.delete(0, END)
+        entry_miasto.insert(0, osoba.miasto)
+        button_dodaj.config(text="Zapisz", command=lambda: zapisz(i))
+
+    def zapisz(i):
+        imie = entry_imie.get().strip()
+        miasto = entry_miasto.get().strip()
+        if not imie or not miasto:
+            return
+        if baza_danych[nazwa_uczelni][i].marker:
+            baza_danych[nazwa_uczelni][i].marker.delete()
+        baza_danych[nazwa_uczelni][i] = typ_klasy(imie, miasto, nazwa_uczelni)
+        odswiez()
+        entry_imie.delete(0, END)
+        entry_miasto.delete(0, END)
+        button_dodaj.config(text=f"Dodaj {nazwa_typu.lower()}", command=dodaj)
+
+    def pokaz_na_mapie_wszystkich():
+        osoby = baza_danych[nazwa_uczelni]
+        if not osoby:
+            return
+        for o in osoby:
+            if o.marker:
+                o.marker.delete()
+            o.marker = map_widget.set_marker(o.latitude, o.longitude, text=f"{o.imie_nazwisko}\n({o.miasto})")
+        lat = sum(o.latitude for o in osoby) / len(osoby)
+        lon = sum(o.longitude for o in osoby) / len(osoby)
+        map_widget.set_position(lat, lon)
+        map_widget.set_zoom(8)
+
+    entry_imie = Entry(okno, width=40)
+    entry_imie.pack()
+    entry_imie.insert(0, "Imię i nazwisko")
+
+    entry_miasto = Entry(okno, width=40)
+    entry_miasto.pack()
+    entry_miasto.insert(0, "Miasto")
+
+    button_dodaj = Button(okno, text=f"Dodaj {nazwa_typu.lower()}", command=dodaj)
+    button_dodaj.pack(pady=2)
+
+    Button(okno, text=f"Usuń {nazwa_typu.lower()}", command=usun).pack(pady=2)
+    Button(okno, text=f"Edytuj {nazwa_typu.lower()}", command=edytuj).pack(pady=2)
+    Button(okno, text="Pokaż wszystkich na mapie", command=pokaz_na_mapie_wszystkich).pack(pady=4)
+
+    odswiez()
