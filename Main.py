@@ -141,3 +141,58 @@ def otworz_panel_osob(nazwa_typu, typ_klasy, baza_danych):
     Button(okno, text="Pokaż wszystkich na mapie", command=pokaz_na_mapie_wszystkich).pack(pady=4)
 
     odswiez()
+
+def dodaj_uczelnie():
+    nazwa = entry_nazwa.get().strip()
+    if not nazwa:
+        return
+    uczelnia = Uczelnia(nazwa)
+    uczelnie.append(uczelnia)
+    uczelnia_pracownicy[nazwa] = []
+    uczelnia_klienci[nazwa] = []
+    pokaz_uczelnie()
+    entry_nazwa.delete(0, END)
+    entry_nazwa.focus()
+
+def pokaz_uczelnie():
+    listbox_uczelnie.delete(0, END)
+    for i, uczelnia in enumerate(uczelnie):
+        listbox_uczelnie.insert(i, f"{i+1}. {uczelnia.nazwa}")
+
+def pokaz_na_mapie_uczelni():
+    idx = listbox_uczelnie.curselection()
+    if not idx:
+        return
+    uczelnia = uczelnie[idx[0]]
+    map_widget.set_position(uczelnia.latitude, uczelnia.longitude)
+    map_widget.set_zoom(13)
+
+def pokaz_wszystkie_uczelnie_na_mapie():
+    for u in uczelnie:
+        if u.marker:
+            u.marker.delete()
+        u.marker = map_widget.set_marker(u.latitude, u.longitude, text=u.nazwa)
+    if uczelnie:
+        lat = sum(u.latitude for u in uczelnie) / len(uczelnie)
+        lon = sum(u.longitude for u in uczelnie) / len(uczelnie)
+        map_widget.set_position(lat, lon)
+        map_widget.set_zoom(6)
+
+def pokaz_osoby_uczelni(typ):
+    idx = listbox_uczelnie.curselection()
+    if not idx:
+        return
+    uczelnia = uczelnie[idx[0]]
+    nazwa = uczelnia.nazwa
+    dane = uczelnia_pracownicy if typ == "pracownik" else uczelnia_klienci
+    osoby = dane.get(nazwa, [])
+    for o in osoby:
+        if o.marker:
+            o.marker.delete()
+        o.marker = map_widget.set_marker(o.latitude, o.longitude, text=f"{o.imie_nazwisko}\n({o.miasto})")
+    if osoby:
+        lat = sum(o.latitude for o in osoby) / len(osoby)
+        lon = sum(o.longitude for o in osoby) / len(osoby)
+        map_widget.set_position(lat, lon)
+        map_widget.set_zoom(7)
+
