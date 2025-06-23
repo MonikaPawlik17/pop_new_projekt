@@ -263,3 +263,16 @@ Button(ramka_lista, text="Pracownicy", command=lambda: otworz_panel_osob("Pracow
 Button(ramka_lista, text="Klienci", command=lambda: otworz_panel_osob("Klienci", Klient, uczelnia_klienci)).pack(pady=5)
 Button(ramka_lista, text="Mapa pracowników wybranej", command=lambda: pokaz_osoby_uczelni("pracownik")).pack(pady=2)
 Button(ramka_lista, text="Mapa klientów wybranej", command=lambda: pokaz_osoby_uczelni("klient")).pack(pady=2)
+
+Label(ramka_formularz, text="Dodaj uczelnię (nazwa/adres):").pack()
+entry_nazwa = Entry(ramka_formularz, width=40)
+entry_nazwa.pack()
+button_dodaj = Button(ramka_formularz, text="Dodaj uczelnię", command=dodaj_uczelnie)
+button_dodaj.pack(pady=5)
+
+map_widget = tkintermapview.TkinterMapView(ramka_mapa, width=800, height=500, corner_radius=0)
+map_widget.pack(fill=BOTH, expand=True)
+map_widget.set_position(52.23, 21.0)
+map_widget.set_zoom(6)
+
+root.mainloop()
