@@ -237,3 +237,17 @@ def zapisz_edycje(i):
     pokaz_uczelnie()
     entry_nazwa.delete(0, END)
     button_dodaj.config(text="Dodaj uczelnię", command=dodaj_uczelnie)
+
+
+# === GUI ===
+root = Tk()
+root.title("Uczelnie – Mapa i Zarządzanie")
+root.geometry("1200x700")
+
+ramka_lista = Frame(root)
+ramka_formularz = Frame(root)
+ramka_mapa = Frame(root)
+
+ramka_lista.pack(side=LEFT, padx=10, pady=10)
+ramka_formularz.pack(side=TOP, padx=10, pady=10)
+ramka_mapa.pack(side=BOTTOM, padx=10, pady=10, fill=BOTH, expand=True)
